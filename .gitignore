@@ -1,0 +1,38 @@
+# Rust
+/target
+**/target
+*.rs.bk
+Cargo.lock.bak
+
+# Node
+node_modules
+dist
+dist-ssr
+.vite
+*.local
+
+# Tauri
+src-tauri/gen
+src-tauri/target
+src-tauri/.tauri
+
+# Local data / secrets
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+src-tauri/.env
+*.pem
+*.key
+!docs/**/*.md
+
+# Tooling
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.swp
+coverage
+.turbo
