@@ -1,0 +1,107 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # Keep dependency builds cacheable and reproducible.
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: typecheck and build
+        run: npm run build
+
+      - name: unit tests
+        run: npm test
+
+      - name: schema conformance
+        # Runs the real migrations against SQLite and asserts the invariants
+        # (one live session per game, generated durations, cascades). Needs no
+        # Rust toolchain, so it is fast feedback on the most costly mistakes.
+        run: npm run check:schema
+
+      - name: token discipline
+        run: npm run check:tokens
+
+  rust-linux:
+    name: rust (linux)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            patchelf \
+            build-essential
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+
+      - run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: test
+        run: cargo test --all-features
+
+      - name: build the shell
+        run: npm ci && cargo build --release -p vitrine
+
+  rust-windows:
+    name: rust (windows)
+    # The only place Job Object containment can actually be exercised.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: '. -> target'
+
+      - run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: test
+        # Includes the tracker acceptance suite once M3 lands: grandchild
+        # survival, kill-tree, and no-zombie assertions.
+        run: cargo test --all-features

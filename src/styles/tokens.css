@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+/*
+ * Vitrine design tokens.
+ *
+ * Two primitive palettes over one semantic layer. "day" is paper, "room" is ink
+ * — the same collection lit for a desk and for a dark living room.
+ *
+ * RULE: no colour, font or motion literal may appear outside this file.
+ *       CI enforces it (`npm run check:tokens`).
+ */
+
+:root,
+[data-theme='day'] {
+  --surface-0: #f6f1e8;
+  --surface-1: #efe8db;
+  --surface-2: #e4daca;
+
+  --ink-900: #14120f;
+  --ink-700: #3a352d;
+  --ink-500: #6b6357;
+  --ink-300: #a79c88;
+
+  --brass: #b4763a;
+  --brass-dim: #8c5a2b;
+  --signal: #c2452d;
+
+  /*
+   * Ink printed on physical packaging. Deliberately NOT overridden by "room":
+   * a case's spine label does not invert when you turn the lights down. Only the
+   * environment is theme-dependent, never the objects in it.
+   */
+  --on-accent: #f6f1e8;
+
+  --shadow-warm: 20 18 15;
+}
+
+[data-theme='room'] {
+  --surface-0: #14120f;
+  --surface-1: #1c1916;
+  --surface-2: #262119;
+
+  --ink-900: #f4efe5;
+  --ink-700: #cfc6b6;
+  --ink-500: #948b7b;
+  --ink-300: #5e574c;
+
+  --brass: #c98b4b;
+  --brass-dim: #a06f3b;
+  --signal: #e0593c;
+
+  --shadow-warm: 0 0 0;
+}
+
+/* Expose the semantic layer to Tailwind so utilities follow the active theme. */
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-500: var(--ink-500);
+  --color-ink-300: var(--ink-300);
+  --color-brass: var(--brass);
+  --color-brass-dim: var(--brass-dim);
+  --color-signal: var(--signal);
+  --color-on-accent: var(--on-accent);
+
+  /* Type stacks. Font files are added in M2; the fallbacks are deliberate. */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-ui: 'Inter Tight', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-data: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-case: 2px;
+
+  --ease-shelf: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  html[data-theme='room'] {
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background: var(--surface-0);
+    color: var(--ink-900);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.55;
+    overscroll-behavior: none;
+    user-select: none;
+  }
+
+  /* Every surface that can receive focus uses this, never a bespoke outline. */
+  :focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 4px;
+    border-radius: 0;
+  }
+
+  ::selection {
+    background: var(--brass);
+    color: var(--surface-0);
+  }
+}
+
+@layer utilities {
+  .type-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variation-settings: 'SOFT' 0, 'WONK' 0, 'opsz' 48;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+  }
+
+  .type-data {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .type-badge {
+    font-family: var(--font-data);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Motion grammar: no overshoot, ever. */
+  .motion-standard {
+    transition-duration: 260ms;
+    transition-timing-function: var(--ease-shelf);
+  }
+
+  .motion-scene {
+    transition-duration: 420ms;
+    transition-timing-function: var(--ease-shelf);
+  }
+}
+
+/* Reduced motion keeps state changes legible but removes travel. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 80ms !important;
+    transition-property: opacity, color, background-color, border-color !important;
+  }
+}
