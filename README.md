@@ -1,5 +1,9 @@
 # Vitrine
 
+![Rust](https://img.shields.io/badge/rust-stable-000000?logo=rust)
+![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 A desktop game launcher for PC games and emulated systems, for Windows and
 Linux. A private collection, not a storefront: your cases sit on a shelf as
 spines, and you pull one out to see its face.
